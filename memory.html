@@ -1,0 +1,344 @@
+
+<!DOCTYPE html>
+<!--Wykonala Zuzanna Dąbrowa 3Ia-->
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>memory</title>
+  <style>
+
+  *{
+    font-family: sans-serif, tahoma;
+  }
+    #main {
+      width: 400px;
+      height: 400px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .karta {
+      width: 95px;
+      height: 95px;
+      border-radius: 5px;
+    }
+
+    #timer30,
+    #timer60,
+    #timer90 {
+      z-index: 100;
+      position: absolute;
+      left: 100px;
+    }
+
+    #timer30 {
+      top: 20px;
+    }
+
+    #timer60 {
+      top: 120px;
+    }
+
+    #timer90 {
+      top: 220px;
+    }
+
+
+    #zewnetrzny {
+
+      height: 30px;
+      width: 400px;
+      border: 1px solid black;
+      margin: 0 auto;
+      display: none;
+    }
+
+    #wewnetrzny {
+
+      height: 29px;
+      width: 0;
+      background-color: #66f97c;
+    }
+
+    #komunikat{
+      display: block;
+      width: 300px;
+      height: 100px;
+      position: absolute;
+      right: 100px;
+      top: 300px;
+      color: black;
+      font-size: 35px;
+    }
+  </style>
+
+  <script>
+  function init() {
+
+    var karty = document.getElementsByClassName("karta");
+    var ukryte = ['1.jpg', '1.jpg', '2.jpg', '2.jpg', '3.jpg', '3.jpg', '4.jpg',
+      '4.jpg', '5.jpg', '5.jpg', '6.jpg', '6.jpg', '7.jpg', '7.jpg', '8.jpg',
+      '8.jpg'
+    ];
+    var stan = false; // czy jest kliknieta karta
+    var pierwsza, druga;
+    var ignoruj = true; //ignorowanie klikniec
+    var licznik = 0; // licznik odkrytych kart
+    var ileCzasu;
+    var koniecCzasu = 0;
+    var zliczanieCzasu = 0;
+    console.log();
+    //console.log(ukryte);
+    //console.log(karty);
+
+    //------------------------------FUNKCJE----------------------------------------
+
+    //---------------kliknietoWKarte-----------------------------------------------
+
+    function kliknietoWKarte() {
+      //console.log("stan: " + stan);
+      //console.log(ignoruj + " zignorowany");
+      if (koniecCzasu == 0) {
+        koniecCzasu = new Date().getTime() + ileCzasu * 1000;
+        zliczanieCzasu = setInterval(timer, 10);
+      }
+      if (ignoruj == true) {
+        return;
+      } //wychodzi z funkcji i nic nie robi
+
+      //console.log(this.src.substring(this.src.length-5));
+      if (this.src.substring(this.src.length - 5) != "0.jpg") {
+        return;
+      } // pamiętaj  klikaj w 0
+      var j = -1;
+      //console.log(this);
+
+      for (var i = 0; i < karty.length; i++) {
+        if (karty[i] == this) {
+          j = i;
+          break;
+        }
+      }
+      //console.log(j);
+      this.src = ukryte[j];
+
+      if (stan == false) {
+        //console.log("Kliknieto 1 karte");
+        pierwsza = this;
+        stan = true;
+      } else {
+        //console.log("Kliknieto 2 karte");
+        druga = this;
+        if (pierwsza.src == druga.src) {
+          //console.log("Jest fajnie");
+          licznik += 1;
+          //console.log(licznik);
+          if (licznik == 8) {
+            console.log("Koniec gry!");
+            document.getElementById("zewnetrzny").style.display = "none";
+            document.getElementById("komunikat").innerText =
+              "Wygrales gre! Reset gry nastapi za 3s!";
+            clearInterval(zliczanieCzasu);
+            setTimeout(function() {
+              restart();
+            }, 3000)
+          }
+          stan = false;
+        } else {
+          ignoruj = true;
+          setTimeout(function() {
+            pierwsza.src = "0.jpg";
+            druga.src = "0.jpg";
+            ignoruj = false;
+            stan = false;
+          }, 450);
+        }
+      }
+    }
+    //---------------------MIESZANIE TABLICY-------------------------------------
+
+    function mieszajUkryte(ukryte) {
+      var licznik = ukryte.length;
+      do {
+        var indeks = Math.floor(Math.random() * licznik);
+
+        licznik--;
+
+        var j = ukryte[licznik];
+        ukryte[licznik] = ukryte[indeks];
+        ukryte[indeks] = j;
+      } while (licznik > 0)
+
+      return ukryte;
+    }
+
+    mieszajUkryte(ukryte);
+
+
+    //--------------------WYBIERZ CZAS-------------------------------------------
+
+    function wybierzCzas(czas) {
+      console.log(czas);
+
+      document.getElementById("tytul").innerText = "Memory (" + czas + "[s])";
+      console.log("hahaha");
+      ignoruj = false;
+      document.getElementById("czasy").style.display = "none";
+
+      ileCzasu = czas;
+    }
+
+    //---------------TIMER------------------------------------------
+
+    function timer() {
+      var aktualnaData = new Date().getTime();
+      var procenty = Math.floor((koniecCzasu - aktualnaData) / (ileCzasu * 1000) *
+        100)
+
+      var minuty = parseInt(((koniecCzasu - aktualnaData) % (1000 * 60 * 60)) /
+        (1000 * 60));
+      var sekundy = parseInt(((koniecCzasu - aktualnaData) % (1000 * 60)) /
+        1000);
+      var milisekundy = parseInt((koniecCzasu - aktualnaData) % (1000));
+
+      document.getElementById("wewnetrzny").innerText = minuty + ":" + sekundy +
+        "." + milisekundy;
+
+      if (minuty < 10) {
+        document.getElementById("wewnetrzny").innerText = "0" + minuty + ":" +
+          sekundy + "." + milisekundy;
+        if (sekundy < 10) {
+          document.getElementById("wewnetrzny").innerText = "0" + minuty + ":0" +
+            sekundy + "." + milisekundy;
+          if (milisekundy < 100) {
+            document.getElementById("wewnetrzny").innerText = "0" + minuty + ":0" +
+              sekundy + ".0" + milisekundy;
+            if (milisekundy < 10) {
+              document.getElementById("wewnetrzny").innerText = "0" + minuty +
+                ":0" +
+                sekundy + ".00" + milisekundy;
+            }
+          }
+        }
+      }
+
+
+
+      document.getElementById("zewnetrzny").style.display = "block";
+
+      document.getElementById("wewnetrzny").style.width = procenty + "%";
+      if (procenty <= 20) {
+        document.getElementById("wewnetrzny").style.background = "#ef4340";
+      }
+
+      if (aktualnaData >= koniecCzasu) {
+        document.getElementById("zewnetrzny").style.display = "none";
+        clearInterval(zliczanieCzasu);
+
+
+        if (licznik != 8) {
+          ignoruj = true;
+          document.getElementById("komunikat").innerText =
+            "Przegrales gre :( za 3s nastapi restart gry";
+
+          setTimeout(function() {
+            restart();
+          }, 3000);
+
+        }
+      }
+
+    }
+
+    //----------------------RESTART-------------------------------------------
+
+    function restart() {
+      for (var i = 0; i < karty.length; i++) {
+        karty[i].src = "0.jpg";
+      }
+
+      document.getElementById("czasy").style.display = "block";
+      document.getElementById("tytul").innerText = "Memory";
+      document.getElementById("wewnetrzny").style.background = "#66f97c";
+      document.getElementById("zewnetrzny").style.display = "none";
+      document.getElementById("komunikat").innerText = "";
+
+      stan = false;
+      ignoruj = true;
+      licznik = 0;
+      koniecCzasu = 0;
+      mieszajUkryte(ukryte);
+      console.log(restart);
+    }
+
+
+
+    //---------------------------PODPINANIE EVENTOW-----------------------------
+
+    for (var i = 0; i < karty.length; i++) {
+
+      karty[i].addEventListener("click", kliknietoWKarte);
+    }
+
+    document.getElementById("timer30").addEventListener("click", function() {
+      wybierzCzas(30);
+    });
+    document.getElementById("timer60").addEventListener("click", function() {
+      wybierzCzas(60);
+    });
+    document.getElementById("timer90").addEventListener("click", function() {
+      wybierzCzas(90);
+    });
+
+  }
+
+
+  </script>
+
+
+</head>
+
+<body onload="init()">
+  <h1 id="tytul"> Memory </h1>
+  <div id="zewnetrzny">
+    <div id="wewnetrzny"></div>
+  </div>
+  <div id="main">
+
+    <div id="czasy">
+      <img src="timer30.png" alt="timer" id="timer30" onclick="wybierzCzas(30);" />
+      <img src="timer60.png" alt="timer" id="timer60" onclick="wybierzCzas(60);" />
+      <img src="timer90.png" alt="timer" id="timer90" onclick="wybierzCzas(90);" />
+    </div>
+
+    <img src="0.jpg" alt="obrazek" class="karta" id="obrazek1" />
+    <img src="0.jpg" alt="obrazek" class="karta" id="obrazek2" />
+    <img src="0.jpg" alt="obrazek" class="karta" id="obrazek3" />
+    <img src="0.jpg" alt="obrazek" class="karta" id="obrazek4" />
+
+    <img src="0.jpg" alt="obrazek" class="karta" id="obrazek5" />
+    <img src="0.jpg" alt="obrazek" class="karta" id="obrazek6" />
+    <img src="0.jpg" alt="obrazek" class="karta" id="obrazek7" />
+    <img src="0.jpg" alt="obrazek" class="karta" id="obrazek8" />
+
+    <img src="0.jpg" alt="obrazek" class="karta" id="obrazek9" />
+    <img src="0.jpg" alt="obrazek" class="karta" id="obrazek10" />
+    <img src="0.jpg" alt="obrazek" class="karta" id="obrazek11" />
+    <img src="0.jpg" alt="obrazek" class="karta" id="obrazek12" />
+
+    <img src="0.jpg" alt="obrazek" class="karta" id="obrazek13" />
+    <img src="0.jpg" alt="obrazek" class="karta" id="obrazek14" />
+    <img src="0.jpg" alt="obrazek" class="karta" id="obrazek15" />
+    <img src="0.jpg" alt="obrazek" class="karta" id="obrazek16" />
+  </div>
+
+  <p id="komunikat"> </p>
+
+</body>
+
+</html>
